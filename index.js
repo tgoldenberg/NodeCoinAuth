@@ -28,12 +28,6 @@ var socketOptions = {
   encrypted: true
 };
 
-const netServer = net.createServer(function(socket) {
-  socket.write('> next block: 1234');
-  socket.pipe(socket);
-});
-netServer.listen(1337, ipAddr);
-
 var socket = new Socket(socketOptions);
 
 app.post('/pusher/auth', function(req, res) {
@@ -45,78 +39,6 @@ app.post('/pusher/auth', function(req, res) {
   res.send(auth);
 });
 
-app.listen(3000, function() {
-  console.log('> Server listening on port 3000...', ipAddr);
-
-  // initialize blockchain
-  var blockchain = typeof wholeChain === 'object' ? wholeChain : new Blockchain();
-
-  db.put('firstBlock', null);
-  db.put('lastBlock', null);
-  db.put('wholeChain', blockchain);
-
-  console.log('> Initializing Pusher...', blockchain);
-
-  var client = new Client(process.env.PUSHER_APP_KEY, {
-    cluster: 'us2',
-    authEndpoint: 'http://localhost:3000/pusher/auth',
-    encrypted: true
-  });
-
-  console.log('> Subscribing to changes...');
-  var channel = client.subscribe('presence-node-coin');
-
-  channel.bind('pusher:subscription_succeeded', function (members) {
-    console.log('> Subscription succeeded: ', members);
-    let hitMe = false;
-    channel.members.each(function(member) {
-      if (hitMe) {
-
-        // found next IP address - set up server to listen and send messages
-      }
-      if (member.id === ipAddr) {
-        hitMe = true;
-      }
-    });
-    // pick an IP address to connect to
-
-    // socket.trigger('presence-node-coin', 'blocks:request_blocks', {
-    //   ip_addr: ipAddr,
-    //   last_block: blockchain.tail,
-    //   timestamp: new Date().valueOf(),
-    // });
-  });
-
-  channel.bind('pusher:member_added', function(member){
-    console.log('> Member added: ', member);
-    let hitMe = false;
-    channel.members.each(function(member) {
-      if (hitMe) {
-        // found next IP address - set up server to listen and send messages
-        const netClient = new net.Socket();
-        netClient.connect(1337, member.id, function() {
-          console.log('> Connected');
-          netClient.write(blockchain.tail.hash);
-        });
-        netClient.on('data', function(data) {
-          console.log('> Received: ', data.toString());
-        })
-      }
-      if (member.id === ipAddr) {
-        hitMe = true;
-      }
-    });
-  });
-
-  channel.bind('pusher:member_removed', function(member){
-    console.log('> Member removed: ', member);
-  });
-
-  channel.bind('blocks:request_blocks', function(data) {
-    console.log('> Request for blocks: ', data);
-    if (data.ip_addr !== ipAddr) {
-      // check if has block after last block
-      console.log('> Find missing blocks...');
-    }
-  })
+app.listen(process.env.PORT || 3000, function() {
+  console.log('> Server listening on port 3000...', process.env.PORT);
 });
