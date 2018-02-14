@@ -34,7 +34,8 @@ app.post('/pusher/auth', function(req, res) {
   console.log('> Presence auth: ', req.params, req.body, req.connection.remoteAddress);
   var socket_id = req.body.socket_id;
   var channel_name = req.body.channel_name;
-  var data = { user_id: req.connection.remoteAddress.replace('::ffff:', '') };
+  var ip_addr = req.body.ip_addr;
+  var data = { user_id: ip_addr };
   var auth = socket.authenticate(socket_id, channel_name, data);
   res.send(auth);
 });
