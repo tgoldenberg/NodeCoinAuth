@@ -23,6 +23,7 @@ const socketOptions = {
 
 const socket = new Pusher(socketOptions);
 
+// keep track of IP addresses connected to network 
 app.post('/pusher/auth', function(req, res) {
   console.log('> Presence auth: ', req.params, req.body, req.connection.remoteAddress);
   const socket_id = req.body.socket_id;
@@ -34,11 +35,18 @@ app.post('/pusher/auth', function(req, res) {
   res.send(auth);
 });
 
-// broadcast new transaction 
-app.post('/transaction', async function(req, res) {
+// broadcast new transaction
+app.post('/transactions/new', async function(req, res) {
   console.log('> New transaction: ', req.body);
   // send out to Pusher channel - "transaction:new"
   socket.trigger('presence-node-coin', 'transaction:new', { tx: req.body.tx });
+  res.status(200).send({ sent: true });
+});
+
+// broadcast new block
+app.post('/blocks/new', async function(req, res) {
+  console.log('> New block: ', req.body);
+  socket.trigger('presence-node-coin', 'block:new', { block: req.body.block });
   res.status(200).send({ sent: true });
 });
 

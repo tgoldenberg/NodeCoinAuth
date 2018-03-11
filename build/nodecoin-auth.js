@@ -80,17 +80,17 @@ return /******/ (function(modules) { // webpackBootstrap
 "use strict";
 
 
-__webpack_require__(6);
+__webpack_require__(1);
 
-var _pusherJs = __webpack_require__(1);
+var _pusherJs = __webpack_require__(2);
 
 var _pusherJs2 = _interopRequireDefault(_pusherJs);
 
-var _pusher = __webpack_require__(2);
+var _pusher = __webpack_require__(3);
 
 var _pusher2 = _interopRequireDefault(_pusher);
 
-var _express = __webpack_require__(3);
+var _express = __webpack_require__(4);
 
 var _express2 = _interopRequireDefault(_express);
 
@@ -98,10 +98,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-__webpack_require__(4).config();
+__webpack_require__(5).config();
 
 var app = (0, _express2.default)();
-var bodyParser = __webpack_require__(5);
+var bodyParser = __webpack_require__(6);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -116,6 +116,7 @@ var socketOptions = {
 
 var socket = new _pusher2.default(socketOptions);
 
+// keep track of IP addresses connected to network 
 app.post('/pusher/auth', function (req, res) {
   console.log('> Presence auth: ', req.params, req.body, req.connection.remoteAddress);
   var socket_id = req.body.socket_id;
@@ -127,8 +128,8 @@ app.post('/pusher/auth', function (req, res) {
   res.send(auth);
 });
 
-// broadcast new transaction 
-app.post('/transaction', function () {
+// broadcast new transaction
+app.post('/transactions/new', function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
@@ -152,6 +153,30 @@ app.post('/transaction', function () {
   };
 }());
 
+// broadcast new block
+app.post('/blocks/new', function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(req, res) {
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            console.log('> New block: ', req.body);
+            socket.trigger('presence-node-coin', 'block:new', { block: req.body.block });
+            res.status(200).send({ sent: true });
+
+          case 3:
+          case 'end':
+            return _context2.stop();
+        }
+      }
+    }, _callee2, this);
+  }));
+
+  return function (_x3, _x4) {
+    return _ref2.apply(this, arguments);
+  };
+}());
+
 app.listen(process.env.PORT || 3001, function () {
   console.log('> Server listening on port 3001...', process.env.PORT);
 });
@@ -160,37 +185,37 @@ app.listen(process.env.PORT || 3001, function () {
 /* 1 */
 /***/ (function(module, exports) {
 
-module.exports = require("pusher-js");
+module.exports = require("babel-polyfill");
 
 /***/ }),
 /* 2 */
 /***/ (function(module, exports) {
 
-module.exports = require("pusher");
+module.exports = require("pusher-js");
 
 /***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
-module.exports = require("express");
+module.exports = require("pusher");
 
 /***/ }),
 /* 4 */
 /***/ (function(module, exports) {
 
-module.exports = require("dotenv");
+module.exports = require("express");
 
 /***/ }),
 /* 5 */
 /***/ (function(module, exports) {
 
-module.exports = require("body-parser");
+module.exports = require("dotenv");
 
 /***/ }),
 /* 6 */
 /***/ (function(module, exports) {
 
-module.exports = require("babel-polyfill");
+module.exports = require("body-parser");
 
 /***/ })
 /******/ ]);
